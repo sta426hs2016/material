@@ -24,8 +24,8 @@ Monday 11.00-11.45 Y11-J-05
 ## Tentative Schedule
 
 | Date  | Lecturer | Topic | JC1 | JC2 |
-| ------------- | ------------- | | |
-| 19.09.2016  | Mark; Hubert  | | |
+| --- | --- | --- | --- | --- |
+| 19.09.2016  | Mark; Hubert  | | | |
 
 
 
