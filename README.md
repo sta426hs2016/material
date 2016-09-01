@@ -38,9 +38,9 @@ Monday 11.00-11.45 Y11-J-05
 
 
 ## Useful Links
-Journal club papers (reading list; coming soon)
-[Simply Statistics blog](http://simplystatistics.org/archive/)
-[Getting Genetics Done blog](http://www.gettinggeneticsdone.com/)
+Journal club papers (reading list; coming soon) 
+[Simply Statistics blog](http://simplystatistics.org/archive/) 
+[Getting Genetics Done blog](http://www.gettinggeneticsdone.com/) 
 
 ## Course material
 
