@@ -3,7 +3,6 @@ Fall/Herbst-semester 2016
 
 ## Lectures
 Mondays 9.00-9.45, 10.00-10.45 (approx) (location TBA)
-from 14.09.2015 to 14.12.2015
 
 ## Exercises
 Monday 11.00-11.45 Y11-J-05 
@@ -39,7 +38,9 @@ Monday 11.00-11.45 Y11-J-05
 
 
 ## Useful Links
-[Journal club papers (papers to consider presenting)](coming soon)
+Journal club papers (reading list; coming soon)
+[Simply Statistics blog](http://simplystatistics.org/archive/)
+[Getting Genetics Done blog](http://www.gettinggeneticsdone.com/)
 
 ## Course material
 
