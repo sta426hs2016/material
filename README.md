@@ -2,7 +2,7 @@
 Fall/Herbst-semester 2016
 
 ## Lectures
-Mondays 9.00-9.45, 10.00-10.45 (approx) (location TBA)
+Mondays 9.00-9.45, 10.00-10.45 (approx) Y23-G-04
 
 ## Exercises
 Monday 11.00-11.45 Y11-J-05 
