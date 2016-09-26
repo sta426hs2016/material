@@ -1,0 +1,21 @@
+
+# Go to Terminal
+git clone https://github.com/sta426hs2016/materials.git
+
+# may need to set these the first time through
+git config --list
+git config --global user.name markrobinsonuzh
+
+# add new file or modify existing file
+# add a new file to be tracked
+git add ..
+
+# commit all changes with message
+git commit -a -m "added additional links to blogs"
+
+# push changes to online repo (if you have access)
+git push origin master
+
+# update changes
+git pull
+
