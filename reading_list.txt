@@ -1,0 +1,55 @@
+Suggestions for Journal Club Papers - STA426 HS2016
+===================================================
+
+[The papers listed here are just suggestions.  As mentioned,
+ the journal club papers need to be something that relates
+ "statistics" and "genomics".  See Lecture 1 Notes for more details about
+ expectations of the Journal Club Presentations.  Please discuss
+ your chosen paper with Mark/Hubert before signing up.]
+
+
+RSEM: accurate transcript quantification from RNA-Seq data with or without a reference genome.
+Li B, Dewey CN
+BMC Bioinformatics. 2011 Aug 4;12:323.
+http://www.ncbi.nlm.nih.gov/pubmed/21816040
+http://www.biomedcentral.com/1471-2105/12/323
+
+
+Bayesian analysis of RNA sequencing data by estimating multiple shrinkage priors.
+Van De Wiel MA, Leday GG, Pardo L, Rue H, Van Der Vaart AW, Van Wieringen WN.
+Biostatistics. 2013 Jan;14(1):113-28.
+http://www.ncbi.nlm.nih.gov/pubmed/22988280
+
+
+Circular binary segmentation for the analysis of array-based DNA copy number data.
+Olshen AB, Venkatraman ES, Lucito R, Wigler M.
+Biostatistics. 2004 Oct;5(4):557-72.
+http://www.ncbi.nlm.nih.gov/pubmed/15475419
+
+
+Empirical Bayes Analysis of a Microarray Experiment
+Bradley Efron, Robert Tibshirani, John D Storey & Virginia Tusher
+Journal of the American Statistical Association
+Volume 96, Issue 456, 2001; pages 1151-1160
+http://www.tandfonline.com/doi/abs/10.1198/016214501753382129#.VB_QHS6Szpg
+
+
+Epigenome-wide association studies without the need for cell-type composition
+Zou J, Lippert C, Heckerman D, Aryee M, Listgarten J.
+Nat Methods. 2014 Mar;11(3):309-11.
+http://www.ncbi.nlm.nih.gov/pubmed/24464286
+http://www.nature.com/nmeth/journal/v11/n3/full/nmeth.2815.html
+
+
+Capturing Heterogeneity in Gene Expression Studies by Surrogate Variable Analysis
+Jeffrey T Leek, John D Storey 
+http://www.plosgenetics.org/article/info%3Adoi%2F10.1371%2Fjournal.pgen.0030161
+
+
+Summarizing and correcting the GC content bias in high-throughput sequencing
+Yuval Benjamini and Terence P. Speed
+http://www.ncbi.nlm.nih.gov/pubmed/22323520
+
+
+
+
