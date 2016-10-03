@@ -15,9 +15,9 @@
 ## In-class exercise 1 (1 technology for each row): microarray, Illumina seq, other types of seq
 
 ### Goal: 
-#### produce a 1 paragraph summary
+#### produce a 2-3 point summary
 #### links to a few (<5) good resources
-#### submit a pull request to brainstorm_answers.md
+#### add your description to the #technology_day slack channel (add all github usernames of your group!)
 
 # Part 3 - Brainstorm: Applications in genomics 
 
@@ -43,6 +43,7 @@
 ### Goal: 
 #### write ~2 sentences about what the method does
 #### again, make the link (technology -> application -> statistics)
+#### list the github usernames of everyone in your group
 #### submit a pull request to brainstorm_answers.md
 
 [1] [https://liorpachter.wordpress.com/seq/](https://liorpachter.wordpress.com/seq/)
