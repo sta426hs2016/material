@@ -12,7 +12,7 @@
 
 ## microarray, sequencing, etc.
 
-## In-class exercise 1 (3 groups): microarray, Illumina seq, other types of seq
+## In-class exercise 1 (1 technology for each row): microarray, Illumina seq, other types of seq
 
 ### Goal: 
 #### produce a 1 paragraph summary
