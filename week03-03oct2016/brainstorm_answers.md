@@ -43,14 +43,15 @@ Group: M. Bizzozzero, F. Eichenberger, A. Schnider, F. Lampart, V. Souza
 
 Technology: RAD Seq
 
-Technology      Application		                              Statistical Model  
-RAD Sequencing	Identification of genetic variation (SNPs)	Bayesian (genotype likelihood)    
+|Technology     |  Application		                             | Statistical Model                |
+|---------------|:--------------------------------------------:|---------------------------------:|
+|RAD Sequencing	|  Identification of genetic variation (SNPs)	 | Bayesian (genotype likelihood)   |
 
 Inexpensive platform that allows high-density SNP discovery and genotyping in large populations.   
 Genotyping by sequencing:  
 o	No ascertainment bias.   
 o	Restriction enzyme cuts DNA -> fragments have different length  
 o	Sort fragments by length and sequence only fragments in specific size range (how big genome size, coverage & budget determines how big range is)   
-•	Tag for each individual/pops -> can make multiplex and individually assign amplified sequences   
+o Tag for each individual/pops -> can make multiplex and individually assign amplified sequences   
 
 
