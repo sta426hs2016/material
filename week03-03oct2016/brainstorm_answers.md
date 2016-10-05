@@ -44,7 +44,7 @@ Group: M. Bizzozzero, F. Eichenberger, A. Schnider, F. Lampart, V. Souza
 Technology: RAD Seq
 
 |Technology     |  Application		                             | Statistical Model                |
-|---------------|:--------------------------------------------:|---------------------------------:|
+|:-------------:|:--------------------------------------------:|:--------------------------------:|
 |RAD Sequencing	|  Identification of genetic variation (SNPs)	 | Bayesian (genotype likelihood)   |
 
 Inexpensive platform that allows high-density SNP discovery and genotyping in large populations.   
