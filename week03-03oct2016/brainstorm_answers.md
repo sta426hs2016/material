@@ -54,6 +54,8 @@ o	Restriction enzyme cuts DNA -> fragments have different length
 o	Sort fragments by length and sequence only fragments in specific size range (how big genome size, coverage & budget determines how big range is)   
 o Tag for each individual/pops -> can make multiplex and individually assign amplified sequences   
 
+--
+
 Technology: CirSeq (Row 2: saisomesh2594, fionarhuang, rzgar, khembach, setina42, bunnech, leewayleaf)
 
 CirSeq is a technology specifically devoted to improving existing methods of sequencing circularised nucleic acid strands, such as the genomic RNA of poliovirus. This is important because it could potentially increase our understanding of viral genomic changes during the course of evolution. Our current knowledge of viral genomic sequences is challenged by the huge diversity and rapid adaptation rates of viruses in general. Whilst NGS technologies are adequate in characteristic viral populations as a whole, they nonetheless have limited usefulness, since most gene variants are present only at very low frequencies and may thus be interpreted as false negatives during data curation.
