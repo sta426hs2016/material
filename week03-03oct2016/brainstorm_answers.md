@@ -54,4 +54,12 @@ o	Restriction enzyme cuts DNA -> fragments have different length
 o	Sort fragments by length and sequence only fragments in specific size range (how big genome size, coverage & budget determines how big range is)   
 o Tag for each individual/pops -> can make multiplex and individually assign amplified sequences   
 
+--
 
+Technology: CirSeq (Row 2: saisomesh2594, fionarhuang, rzgar, khembach, setina42, bunnech, leewayleaf)
+
+CirSeq is a technology specifically devoted to improving existing methods of sequencing circularised nucleic acid strands, such as the genomic RNA of poliovirus. This is important because it could potentially increase our understanding of viral genomic changes during the course of evolution. Our current knowledge of viral genomic sequences is challenged by the huge diversity and rapid adaptation rates of viruses in general. Whilst NGS technologies are adequate in characteristic viral populations as a whole, they nonetheless have limited usefulness, since most gene variants are present only at very low frequencies and may thus be interpreted as false negatives during data curation.
+
+In this technology, fragments of the circularised viral genome first serve as templates for rolling-circle replication, which produces tandem repeats of the fragments. The tandem repeats then serve as substrates for NGS, before the sequenced repeats are aligned to generate a consensus sequence. It is the physical linkage of the repeats during rolling-circle replication that provides sequence redundancy for a genomic fragment derived from a single individual within a population of viruses. To test for a decrease in the rate of NGS sequencing errors, CirSeq was tested using Illumina as the NGS technology. The statistical model used in this test was a one-sided Binomial test.
+
+The rest of this paper focusses on an application of CirSeq in studying mutant variants and in turn the reproductive fitness in a given population of polioviruses. Here, an additional statistical model was used, namely a Bayesian autoregression approach.
