@@ -63,3 +63,12 @@ CirSeq is a technology specifically devoted to improving existing methods of seq
 In this technology, fragments of the circularised viral genome first serve as templates for rolling-circle replication, which produces tandem repeats of the fragments. The tandem repeats then serve as substrates for NGS, before the sequenced repeats are aligned to generate a consensus sequence. It is the physical linkage of the repeats during rolling-circle replication that provides sequence redundancy for a genomic fragment derived from a single individual within a population of viruses. To test for a decrease in the rate of NGS sequencing errors, CirSeq was tested using Illumina as the NGS technology. The statistical model used in this test was a one-sided Binomial test.
 
 The rest of this paper focusses on an application of CirSeq in studying mutant variants and in turn the reproductive fitness in a given population of polioviruses. Here, an additional statistical model was used, namely a Bayesian autoregression approach.
+
+--
+
+Technology: CNV-seq
+
+Group: payne76, ellereve, pbieberstein, abhimanyusahai, duoa, paulacarrio
+
+CNV-seq is a shotgun sequencing method used to detect copy number variation (CNV). Shotgun reads from two samples are mapped by sequence alignment on a template genome and analyzed with a sliding window approach so that number of reads per window for each sample can be computed and combined into a ratio. The number of reads in a sliding window is poisson distributed with mean number of reads/window, $\lambda$, depending on total number of sequenced reads N, the size of the sliding window W, and the size of the genome G, where W is much less than G, but when mean number of reads per window is more than 10 with continuity correction, we may use a gaussian approximation for the poisson (Number of reads in sliding window $\sim N(\mu=\lambda, \sigma^{2}=\lambda))$. After a transformation, the ratio between the two samples is $\sim N(0,1)$, when mean number of reads per window in sample y is more than 6 and less than 40,000 in sample x.
+
