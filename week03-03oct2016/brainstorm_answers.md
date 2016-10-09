@@ -72,3 +72,16 @@ Group: payne76, ellereve, pbieberstein, abhimanyusahai, duoa, paulacarrio
 
 CNV-seq is a shotgun sequencing method used to detect copy number variation (CNV). Shotgun reads from two samples are mapped by sequence alignment on a template genome and analyzed with a sliding window approach so that number of reads per window for each sample can be computed and combined into a ratio. The number of reads in a sliding window is poisson distributed with mean number of reads/window, $\lambda$, depending on total number of sequenced reads N, the size of the sliding window W, and the size of the genome G, where W is much less than G, but when mean number of reads per window is more than 10 with continuity correction, we may use a gaussian approximation for the poisson (Number of reads in sliding window $\sim N(\mu=\lambda, \sigma^{2}=\lambda))$. After a transformation, the ratio between the two samples is $\sim N(0,1)$, when mean number of reads per window in sample y is more than 6 and less than 40,000 in sample x.
 
+--
+
+Technology: Freq-Seq
+
+Group: cschiess, kli8996, jkunzethz, hwartmann 
+
+|Technology     |  Application		                             | Statistical Model                |
+|:-------------:|:--------------------------------------------:|:--------------------------------:|
+|Freq-Seq     	|  Determine allel frequencies	               | Quadratic model                  |
+
+Fast and cheap measuring of allelic frequencies in mixed populations by counting Illumina-Sequencing reads. Preparation using 2-step PCR (1. with small locus-specific primers binding near mutation site, 2. with generic primer library attaching barcodes and Illumina adapters).
+
+For high/low frequencies the accuracy can be improved by fitting a quadratic model.
