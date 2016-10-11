@@ -85,3 +85,13 @@ Group: cschiess, kli8996, jkunzethz, hwartmann
 Fast and cheap measuring of allelic frequencies in mixed populations by counting Illumina-Sequencing reads. Preparation using 2-step PCR (1. with small locus-specific primers binding near mutation site, 2. with generic primer library attaching barcodes and Illumina adapters).
 
 For high/low frequencies the accuracy can be improved by fitting a quadratic model.
+
+--
+
+Technology: IN-Seq
+group: supermaxiste, pcharlie, bosiaf, schmeing, xinglu liu, lifters
+[IN-Seq: Andrew L. Goodman et al., “Identifying Genetic Determinants Needed to Establish a Human Gut Symbiont in Its Habitat,” Cell Host & Microbe 6, no. 3 (September 17, 2009): 279–289](http://www.sciencedirect.com/science/article/pii/S1931312809002819)
+
+The method introduces a mutated transposon to a collection of species to mark the DNA. After the selection of specific genes, the DNA is collected and by sequencing, the loci of transposons determine which genes have been essential for survival.
+
+Sequencing, qPCR -> fitness-related gene identification -> Bayesian model using MCMC, z-test, principle coordinate analysis, q-values
