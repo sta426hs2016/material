@@ -141,3 +141,10 @@ Methyl-seq assays only the CpGs in a specific subset of HpaII restriction enzyme
 **hESCs:** Human embryonic stem cells.  
 **HpaII and MspI:** Enzymes that digest CpG sites in a way related to their Methylation status, Mspl digests all the isles whilst Hpall can digest only (at least partially) unmethylated areas.    
 **CpG sites:** The CpG sites or CG sites are regions of DNA where a cytosine nucleotide is followed by a guanine nucleotide in the linear sequence of bases along its 5' → 3' direction. CpG is shorthand for 5'—C—phosphate—G—3'.DNA methylation in vertebrates usually occurs at CpG sites.  
+
+####4. References  
+[1] Wikipedia - The Free Encyclopedia (2016). DNA methylation. [Online] https://en.wikipedia.org/wiki/DNA_methylation
+[2] A. Brunner et. al (2009). Distinct DNA methylation patterns characterize differentiated human embryonic stem cells and developing human fetal liver. [Online] http://genome.cshlp.org/content/19/6/1044.full  
+[3] What is Epigenetics (2016). DNA Methylation. [Online] http://www.whatisepigenetics.com/dna-methylation/   
+[4] A. Bird (1999). DNA Methylation de novo. [Online] http://science.sciencemag.org/content/286/5448/2287  
+[5] Wikipedia - The Free Encyclopedia (2016). Fisher’s exact test. [Online]. https://en.wikipedia.org/wiki/Fisher%27s_exact_test  
