@@ -95,3 +95,49 @@ group: supermaxiste, pcharlie, bosiaf, schmeing, xinglu liu, lifters
 The method introduces a mutated transposon to a collection of species to mark the DNA. After the selection of specific genes, the DNA is collected and by sequencing, the loci of transposons determine which genes have been essential for survival.
 
 Sequencing, qPCR -> fitness-related gene identification -> Bayesian model using MCMC, z-test, principle coordinate analysis, q-values
+
+--
+
+###Technology: Methyl-Seq
+
+Group: abercher, alvaroing12, crazykitlady, FrancescoBigiolli, gasimomitis, terskikh  
+
+Paper: [Alayne L. Brunner et al., “Distinct DNA Methylation Patterns Characterize Differentiated Human Embryonic Stem Cells and Developing Human Fetal Liver,” Genome Research 19, no. 6 (June 1, 2009): 1044–1056](http://genome.cshlp.org/content/19/6/1044.short)
+
+####1. Summary  
+
+|Technology   |  Application                                | Statistical Model    | Hypothesis Testing                     |
+|:-----------:|:-------------------------------------------:|:--------------------:|:--------------------------------------:|
+|Sequencing   |  Determine DNA Methylation (Methyl-Seq)     | Beta values          | Mann-Whitney U-Test, Fisher's Exact Test |
+
+#####1.1. Structure of the method  
+Methyl-seq uses the isoschizomers HpaII and MspI, which recognize the same cleavage site (59-CCGG-39); MspI digests at the site regardless of methylation status, while HpaII digests only unmethylated sites. In Methyl-seq, genomic DNA is digested with HpaII or MspI, ligated to next-gen sequencing adapters, and sub- jected to size selection to isolate small gel fragments, to generate a fragment library for next-gen sequencing. 
+The fragment library is sequenced to obtain millions of short sequence tags that are 25–35 bp in length. Because MspI digests at both methylated and unmethylated sites where HpaII is blocked from digesting methylated sites, sequence tags present in MspI libraries but not in HpaII libraries are derived from methylated regions. Conversely, sequence tags that occur in HpaII libraries come from at least partially unmethylated regions.   
+
+<img src="http://i.imgur.com/EQzdJLo.png" alt="Methyl-Seq process" width="176" height="232"/>  
+
+#####1.2. Validation of the method  
+To validate the effectiveness of the method its results were compared to the ones of the Illumina Infinium HumanMethylation27. 
+The Illumina classification was considered to be the correct one always and evaluation of the method was based on how close it would get to Illumina. To assess the similarity obviously was necessary a statistical test, the one applied was the Fisher Exact test which showed a p-value under 10e-8. The dichotomized Beta-value, output of the Methyl-seq, had a threshold of 0.6 (where >0.6 was methylated and <0.6 was unmethylated.)  
+
+#####1.3. Advantages of the method  
+Methyl-seq allows measurement of the DNA methylation status of more than 90,000 regions, including a significant number that are not covered by any other single technique. The method is sensitive, highly specific with very low background, reproducible, and simple to execute. It is relatively inexpensive, requiring fewer reads on next-gen sequencers than others, and is likely to become less expensive as the sequencing technologies become more efficient and widespread.  
+
+#####1.4. Disadvantages of the method  
+Methyl-seq assays only the CpGs in a specific subset of HpaII restriction enzyme cleavage sites (those that appear within 35–75 bp of each other in the human genome). This significantly limits the number of CpGs assayed but nevertheless provides a snapshot of regional methylation patterns. Additionally, because Methyl-seq is sensitive in detecting small numbers of HpaII tags, this creates a problem measuring methylation quantitatively. While this may likely be improved in the future, we limited the analysis in this current study to binary calls of ‘‘methylated’’ and ‘‘unmethylated.’’  This is not likely to be a problem for most CpGs because numerous studies have shown that most CpGs are mostly methylated (>80%) or mostly unmethylated (<20%). Lastly, because the current Methyl-seq protocol relies on small HpaII fragments (grouped HpaII sites) as opposed to single cut sites, Methyl-seq does not assay most of the very low density CpG regions of the genome, including a number of low density CpG promoters. Because most of these promoters are assayed by Illumina’s Infinium HumanMethylation27 platform, combining the methylation results from Methyl-seq and Illumina’s Infinium HumanMethylation27 beadchips will provide a complete view.  
+
+####2. Results-Conclusions
+* Significant methylation changes are not needed during endoderm formation to control gene expression, which is consistent with previous evidence showing that embryos lacking de novo methyltransferases are viable during gastrulation.  
+* Only a small fraction <5% of the regions that were assayed by Methyl-seq showed changes in DNA methylation during in vitro differentiation.  
+* Methylation patterns seen for all stages of liver have significant overlap and indicate progression of methylation changes over time in vivo.  
+* hESCs and their derivatives have a larger fraction of methylated regions than do the in vivo fetal and adult tissues.  
+* DNA methylation changes during hESC differentiation are not an accurate reflection of the changes in DNA methylation in vivo, at least in liver development.
+
+####3. Definitions
+**Fisher’s exact test:** the significance of the deviation from a null hypothesis (e.g., P-value) can be calculated exactly, rather than relying on an approximation that becomes exact in the limit as the sample size grows to infinity, as with many statistical tests.  
+**Methylation:** Methylation modifies the function of the DNA. When located in a gene promoter, DNA methylation typically acts to repress gene transcription. DNA methylation is essential for normal development and is associated with a number of key processes including genomic imprinting, X-chromosome inactivation, repression of repetitive elements, aging and carcinogenesis.  
+**de novo Methylation:** New DNA methylation patterns, therefore methylation of sites that had not been methylated before in this manne3“. The addition of methyl groups is controlled at several different levels in cells and is carried out by a family of enzymes called DNA methyltransferases (DNMTs).  
+**Demethylation:** Process is necessary for epigenetic reprogramming of genes and is also directly involved in many important disease mechanisms such as tumor progression.  
+**hESCs:** Human embryonic stem cells.  
+**HpaII and MspI:** Enzymes that digest CpG sites in a way related to their Methylation status, Mspl digests all the isles whilst Hpall can digest only (at least partially) unmethylated areas.    
+**CpG sites:** The CpG sites or CG sites are regions of DNA where a cytosine nucleotide is followed by a guanine nucleotide in the linear sequence of bases along its 5' → 3' direction. CpG is shorthand for 5'—C—phosphate—G—3'.DNA methylation in vertebrates usually occurs at CpG sites.  
