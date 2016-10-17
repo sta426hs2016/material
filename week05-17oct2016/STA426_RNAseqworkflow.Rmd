@@ -1,0 +1,520 @@
+---
+title: "RNA-seq workflow"
+output: html_document
+---
+
+## Set some paths
+
+```{r}
+## Set data directory. This is the path to unpacked STA426_RNAseq_input folder
+data_dir <- "~/Dropbox/teaching_material/STA426lecture2016/for_students_input"
+## data_dir <- "/Volumes/GroupsBio/Sta_426/RNAseq_workflow_files/input"
+
+## Set output directory. If you want to generate output, it should be a directory where
+## you have writing permission. If you just want to read the pre-generated output, 
+## it is the path to the unpacked STA426_RNAseq_output folder
+## output_dir <- "~/Dropbox/teaching_material/STA426lecture2016/for_students_output"
+output_dir <- "~/Desktop/STA426"
+## output_dir <- "/Volumes/GroupsBio/Sta_426/RNAseq_workflow_files/output"
+
+## Set paths to the software we will use. This will depend on your system. If you want to 
+## use the pre-generated output, you don't need to set these
+path_to_fastqc <- "~/Documents/Software/FastQC_v0.11.5/fastqc"
+##path_to_fastqc <- "/usr/local/course/bin/fastqc/fastqc"
+
+path_to_hisat2_build <- "~/Documents/Software/hisat2-2.0.4/hisat2-build"
+##path_to_hisat2_build <- "/usr/local/course/bin/hisat2-2.0.4/hisat2-build"
+
+path_to_hisat2 <- "~/Documents/Software/hisat2-2.0.4/hisat2"
+##path_to_hisat2 <- "/usr/local/course/bin/hisat2-2.0.4/hisat2"
+
+path_to_samtools <- "samtools"
+##path_to_samtools <- "/usr/local/course/bin/samtools"
+
+path_to_salmon <- "DYLD_FALLBACK_LIBRARY_PATH=~/Documents/Software/Salmon-0.7.2_OSX_10.11/lib ~/Documents/Software/Salmon-0.7.2_OSX_10.11/bin/salmon"
+```
+
+```{r}
+## If you want to generate output in the output directory, create some 
+## necessary subfolders
+system(sprintf("mkdir -p %s/airway_chr18", output_dir))
+system(sprintf("mkdir -p %s/airway_chr18/reference_chr18/hisat2_index", output_dir))
+```
+
+## Example data set
+
+- RNA-seq experiment wherein airway smooth muscle cells were treated with
+dexamethasone (Himes 2014, PMID 24926665, GSE52778).
+- Four human airway smooth muscle cell lines were treated with 1 micromolar
+dexamethasone for 18 hours.
+- For each of the four cell lines, we have a treated and an untreated sample.
+- All quantifications based on the Ensembl human reference genome, version 
+GRCh37.75.
+
+<!-- slides -->
+
+## Raw data
+
+- Raw reads typically come as fastq files
+
+```{r}
+system(sprintf("head %s/airway_chr18/SRR1039508_chr18_1.fastq", data_dir))
+```
+
+## QC of raw data
+
+- Check for low-quality data, remaining adapters, contamination, ... 
+- [FastQC](http://www.bioinformatics.babraham.ac.uk/projects/fastqc/)
+
+```{r}
+(cmd <- paste0(path_to_fastqc, " -h"))
+system(cmd)
+```
+
+```{r}
+(cmd <- sprintf("%s -o %s/airway_chr18 %s/airway_chr18/SRR1039508_chr18_1.fastq", 
+                path_to_fastqc,
+                output_dir,
+                data_dir))
+system(cmd)
+```
+
+```{r}
+(cmd <- sprintf("%s -o %s/airway_chr18 %s/airway_chr18/SRR1039508_chr18_2.fastq", 
+                path_to_fastqc,
+                output_dir,
+                data_dir))
+system(cmd)
+```
+
+### If necessary, fix QC problems
+
+- Most commonly: trim adapters
+- More rarely: exclude or trim very low-quality sequences
+- [cutadapt](http://cutadapt.readthedocs.io/en/stable/guide.html), [Trimmomatic](http://www.usadellab.org/cms/?page=trimmomatic), [FASTX-toolkit](http://hannonlab.cshl.edu/fastx_toolkit/)
+
+<!-- slides -->
+
+## Reference files
+
+- Needed to infer origin of read sequences
+- [Ensembl](http://www.ensembl.org/info/data/ftp/index.html), [UCSC](http://hgdownload.cse.ucsc.edu/downloads.html), [iGenome](http://support.illumina.com/sequencing/sequencing_software/igenome.html)
+- Alternative: [biomaRt](http://www.ensembl.org/biomart/martview). See a recent  [tutorial](http://www.nxn.se/valent/2016/10/3/the-first-steps-in-rna-seq-expression-analysis-single-cell-and-other)
+
+### Genomic sequence
+
+- Typically in fasta format
+
+```{r}
+system(sprintf("head %s/airway_chr18/reference_chr18/Homo_sapiens.GRCh37.75.dna.chromosome.18.fa", 
+               data_dir))
+system(sprintf("wc -l %s/airway_chr18/reference_chr18/Homo_sapiens.GRCh37.75.dna.chromosome.18.fa",
+               data_dir))
+```
+
+### Transcript sequences
+
+- Typically in fasta format
+
+```{r}
+system(sprintf("head %s/airway_chr18/reference_chr18/Homo_sapiens.GRCh37.75.cdna.chr18.fa", 
+               data_dir))
+system(sprintf("wc -l %s/airway_chr18/reference_chr18/Homo_sapiens.GRCh37.75.cdna.chr18.fa",
+               data_dir))
+system(sprintf("grep '>' %s/airway_chr18/reference_chr18/Homo_sapiens.GRCh37.75.cdna.chr18.fa | wc -l",
+               data_dir))
+```
+
+### Location of genomic features
+
+- Typically in gtf or gff format
+
+```{r}
+system(sprintf("head %s/airway_chr18/reference_chr18/Homo_sapiens.GRCh37.75.chr18.gtf", data_dir))
+```
+
+<!-- slides -->
+
+## Genome alignment-based quantification approach
+
+- Various aligners exist, e.g. [HISAT2](https://ccb.jhu.edu/software/hisat2/index.shtml), [STAR](https://github.com/alexdobin/STAR), [TopHat2](https://ccb.jhu.edu/software/tophat/index.shtml)
+- For genome alignment of RNA-seq data, important that the aligner allows gaps in the alignment (to accommodate reads spanning exon-exon junctions)
+
+### Index reference genome for use with HISAT2
+
+```{r}
+(cmd <- paste0(path_to_hisat2_build, " -h"))
+system(cmd)
+```
+
+```{r}
+(cmd <- sprintf("%s -p 1 %s %s",
+                path_to_hisat2_build,
+                paste0(data_dir, "/airway_chr18/reference_chr18/Homo_sapiens.GRCh37.75.dna.chromosome.18.fa"),
+                paste0(output_dir, "/airway_chr18/reference_chr18/hisat2_index/Homo_sapiens.GRCh37.75.dna.chromosome.18")))
+system(cmd)
+```
+
+
+### Align reads to the indexed genome with HISAT2
+
+```{r}
+(cmd <- paste0(path_to_hisat2, " -h"))
+system(cmd)
+```
+
+```{r}
+(cmd <- sprintf("%s -x %s -1 %s -2 %s > %s",
+                path_to_hisat2,
+                paste0(output_dir, "/airway_chr18/reference_chr18/hisat2_index/Homo_sapiens.GRCh37.75.dna.chromosome.18"),
+                paste0(data_dir, "/airway_chr18/SRR1039508_chr18_1.fastq"),
+                paste0(data_dir, "/airway_chr18/SRR1039508_chr18_2.fastq"),
+                paste0(output_dir, "/airway_chr18/SRR1039508_chr18_hisat2.sam")))
+system(cmd)
+```
+
+- Output from aligner typically in [SAM or BAM (binary SAM)](https://samtools.github.io/hts-specs/SAMv1.pdf) format
+
+```{r}
+system(sprintf("head %s/airway_chr18/SRR1039508_chr18_hisat2.sam", output_dir))
+```
+
+### Convert sam file to binary bam file and sort alignments
+
+- [samtools](http://www.htslib.org/) is the standard library for manipulating SAM/BAM files
+
+```{r}
+(cmd <- sprintf("%s view -b %s | %s sort -T tmp -O bam - > %s",
+                path_to_samtools, 
+                paste0(output_dir, "/airway_chr18/SRR1039508_chr18_hisat2.sam"),
+                path_to_samtools, 
+                paste0(output_dir, "/airway_chr18/SRR1039508_chr18_hisat2.bam")))
+system(cmd)
+```
+
+### Index bam file
+
+```{r}
+(cmd <- sprintf("%s index %s/airway_chr18/SRR1039508_chr18_hisat2.bam", 
+                path_to_samtools, 
+                output_dir))
+system(cmd)
+```
+
+<!-- slides -->
+
+### Count number of reads overlapping each gene
+
+- Several options available: [Rsubread/featureCounts](https://bioconductor.org/packages/release/bioc/html/Rsubread.html), [HTSeq-count](http://www-huber.embl.de/users/anders/HTSeq/doc/count.html), [summarizeOverlaps](https://bioconductor.org/packages/release/bioc/html/GenomicAlignments.html)
+
+```{r}
+library(Rsubread)
+?featureCounts
+fc <- featureCounts(files = path.expand(paste0(output_dir, "/airway_chr18/SRR1039508_chr18_hisat2.bam")), 
+                    annot.ext = path.expand(paste0(data_dir,
+                                                   "/airway_chr18/reference_chr18/Homo_sapiens.GRCh37.75.chr18.gtf")),
+                    isGTFAnnotationFile = TRUE, GTF.featureType = "exon", 
+                    GTF.attrType = "gene_id", useMetaFeatures = TRUE, 
+                    strandSpecific = 0, isPairedEnd = TRUE)
+saveRDS(fc, file = paste0(output_dir, "/featureCounts.rds"))
+```
+
+```{r}
+fc <- readRDS(paste0(output_dir, "/featureCounts.rds"))
+names(fc)
+fc$stat
+```
+
+```{r}
+head(fc$counts)
+```
+
+## "Alignment-free" quantification approach
+
+- Several options: [kallisto](https://pachterlab.github.io/kallisto/), [Salmon](https://combine-lab.github.io/salmon/), [Sailfish](http://www.cs.cmu.edu/~ckingsf/software/sailfish/)
+
+```{r}
+(cmd <- path_to_salmon)
+system(cmd)
+```
+
+```{r}
+(cmd <- paste0(path_to_salmon, " index -h"))
+system(cmd)
+```
+
+### Merge coding and noncoding RNA reference files
+
+```{r}
+(cmd <- sprintf("cat %s %s > %s",
+                paste0(data_dir, "/airway_chr18/reference_chr18/Homo_sapiens.GRCh37.75.cdna.chr18.fa"), 
+                paste0(data_dir, "/airway_chr18/reference_chr18/Homo_sapiens.GRCh37.75.ncrna.chr18.fa"), 
+                paste0(output_dir, "/airway_chr18/reference_chr18/Homo_sapiens.GRCh37.75.cdna.ncrna.chr18.fa")))
+system(cmd)
+```
+
+### Index reference transcriptome for use with Salmon
+
+```{r}
+(cmd <- sprintf("%s index -t %s -i %s -p 1",
+                path_to_salmon,
+                paste0(output_dir, "/airway_chr18/reference_chr18/Homo_sapiens.GRCh37.75.cdna.ncrna.chr18.fa"),
+                paste0(output_dir, "/airway_chr18/reference_chr18/Homo_sapiens.GRCh37.75.cdna.ncrna.chr18.sidx")))
+system(cmd)
+```
+
+### Quantify transcript abundances
+
+```{r}
+(cmd <- paste0(path_to_salmon, " quant --help-reads"))
+system(cmd)
+
+(cmd <- sprintf("%s quant -i %s -l A -1 %s -2 %s -o %s -p 1",
+                path_to_salmon,
+                paste0(output_dir, "/airway_chr18/reference_chr18/Homo_sapiens.GRCh37.75.cdna.ncrna.chr18.sidx"),
+                paste0(data_dir, "/airway_chr18/SRR1039508_chr18_1.fastq"),
+                paste0(data_dir, "/airway_chr18/SRR1039508_chr18_2.fastq"),
+                paste0(output_dir, "/airway_chr18/SRR1039508_chr18_salmon")))
+system(cmd)
+
+```
+
+```{r}
+system(sprintf("head %s/airway_chr18/SRR1039508_chr18_salmon/quant.sf", output_dir))
+```
+
+### Generate transcript-to-gene mapping
+
+- Needed to tell Salmon which transcripts stem from the same gene locus, and further to summarize abundances on the gene level
+
+```{r}
+system(sprintf("head %s/airway_chr18/reference_chr18/Homo_sapiens.GRCh37.75.cdna.ncrna.chr18.fa", output_dir))
+```
+
+<!-- slides -->
+
+```{r}
+library(Biostrings)
+
+## Read the fasta file in R using a function from the Biostrings package
+cdna.ncrna <- readDNAStringSet(paste0(output_dir,
+                                      "/airway_chr18/reference_chr18/Homo_sapiens.GRCh37.75.cdna.ncrna.chr18.fa"))
+
+## Go through the sequence names and extract the required information
+tx2gene <- data.frame(t(sapply(names(cdna.ncrna), function(nm) {
+  tmp <- strsplit(nm, " ")[[1]]
+  tx <- tmp[1]
+  gene <- gsub("gene:", "", tmp[grep("^gene:", tmp)])
+  c(tx = tx, gene = gene)
+})), stringsAsFactors = FALSE)
+rownames(tx2gene) <- NULL
+
+head(tx2gene)
+```
+
+### Import abundance estimates into R and summarize on gene level
+
+- Parse the text files output by Salmon and summarize the data for all samples into one abundance matrix
+
+```{r}
+library(tximport)
+files <- paste0(output_dir, "/airway_chr18/SRR1039508_chr18_salmon/quant.sf")
+names(files) <- "SRR1039508"
+files
+txi <- tximport(files = files, type = "salmon", tx2gene = tx2gene)
+```
+
+```{r}
+names(txi)
+head(txi$counts)
+```
+
+### Compare gene counts from the two approaches
+
+```{r}
+plot(fc$counts, txi$counts[match(rownames(fc$counts), rownames(txi$counts))], 
+     log = "xy", xlab = "featureCounts", ylab = "Salmon")
+abline(0, 1)
+```
+
+```{r}
+rn <- rownames(fc$counts[order(fc$counts - txi$counts[match(rownames(fc$counts), 
+                                                            rownames(txi$counts))])[1:4], , drop = FALSE])
+rn
+txi$counts[rn, ]
+fc$counts[rn, ]
+colSums(txi$counts)
+colSums(fc$counts)
+```
+
+<!-- slides -->
+
+## Load counts and tx2gene mapping for full data set
+
+```{r}
+dirs <- list.files(paste0(data_dir, "/airway_full/salmon"), full.names = TRUE)
+files <- paste0(dirs, "/quant.sf")
+names(files) <- basename(dirs)
+files
+```
+
+```{r}
+tx2gene <- readRDS(paste0(data_dir, "/airway_full/Homo_sapiens.GRCh37.75.cdna.ncrna.tx2gene.rds"))
+txi <- tximport(files = files, type = "salmon", tx2gene = tx2gene)
+```
+
+```{r}
+head(txi$counts)
+colSums(txi$counts)
+```
+
+## Generate DGEList 
+
+- Stores all necessary information about the experiment in a single object - easier to keep track and offers control mechanisms
+- Other packages than [edgeR](http://bioconductor.org/packages/release/bioc/html/edgeR.html) (which we will use here) use other objects (e.g., DESeqDataSet for [DESeq2](http://bioconductor.org/packages/release/bioc/html/DESeq2.html))
+
+```{r}
+library(edgeR)
+dge <- DGEList(counts = txi$counts, genes = data.frame(gene.id = rownames(txi$counts)))
+dge
+```
+
+## Add additional gene identifiers
+
+<!-- slides -->
+
+```{r}
+library(AnnotationDbi)
+library(Homo.sapiens)
+columns(Homo.sapiens)
+dge$genes$symbol <- mapIds(Homo.sapiens,
+                           keys = as.character(dge$genes$gene.id),
+                           column = "SYMBOL",
+                           keytype = "ENSEMBL",
+                           multiVals = "first")
+dge$genes$entrez <- mapIds(Homo.sapiens,
+                           keys = as.character(dge$genes$gene.id),
+                           column = "ENTREZID",
+                           keytype = "ENSEMBL",
+                           multiVals = "first")
+
+## Alternative solution
+library(biomaRt)
+ensembl <- useMart(biomart = "ENSEMBL_MART_ENSEMBL", 
+                   dataset="hsapiens_gene_ensembl", host = "www.ensembl.org")
+convtable <- getBM(ensembl, attributes = c("ensembl_gene_id", "entrezgene", "hgnc_symbol"),
+                   filters = "ensembl_gene_id", values = as.character(dge$genes$gene.id))
+dge$genes$symbol <- convtable$hgnc_symbol[match(dge$genes$gene.id, convtable$ensembl_gene_id)]
+dge$genes$entrez <- convtable$entrezgene[match(dge$genes$gene.id, convtable$ensembl_gene_id)]
+
+head(dge$genes)
+```
+
+## Calculate normalization factors
+
+<!-- slides -->
+
+```{r}
+dge <- calcNormFactors(dge)
+dge
+```
+
+## Add additional metadata
+
+```{r}
+meta <- read.delim(paste0(data_dir, "/airway_full/airway_meta.txt"), header = TRUE, as.is = TRUE)
+meta
+dge$samples <- merge(dge$samples, meta[, c("Run", "cell", "dex")], 
+                     by.x = 0, by.y = "Run", all = TRUE)
+dge$samples$dex <- relevel(factor(dge$samples$dex), ref = "untrt")
+dge
+```
+
+## Filter out lowly expressed genes
+
+- Different filter criteria are possible, but should be independent of the test statistic under the null hypothesis (in particular, should not involve use of the sample annotations)
+
+```{r}
+cpm <- cpm(dge)
+dge <- dge[which(rowSums(cpm > 0.5) > 4), , keep.lib.sizes = FALSE]
+dge <- calcNormFactors(dge)
+```
+
+## Estimate dispersion
+
+```{r}
+(design <- model.matrix(~cell + dex, data = dge$samples))
+dge <- estimateDisp(dge, design = design)
+dge
+plotBCV(dge)
+
+plotMDS(dge, col = as.numeric(factor(dge$samples$cell)))
+```
+
+## Fit model and test
+
+```{r}
+## Quasi-likelihood test
+fit <- glmQLFit(dge, design = design, robust = TRUE)
+qlf <- glmQLFTest(fit, coef = "dextrt")
+
+## Alt: Likelihood ratio test
+## fit <- glmFit(dge, design = design)
+## lrt <- glmLRT(fit, coef = "dextrt")
+
+tt <- topTags(qlf, n = Inf)
+head(tt$table)
+```
+
+## Write results to file
+
+```{r}
+write.table(tt$table, file = paste0(output_dir, "/DGE_results_edgeR.txt"), 
+            row.names = FALSE, col.names = TRUE, quote = FALSE, sep = "\t")
+```
+
+<!-- slides -->
+
+## Diagnostics: p-value histogram
+
+```{r}
+hist(tt$table$PValue)
+```
+
+## Find differentially expressed genes
+
+```{r}
+is.de <- decideTestsDGE(qlf, p.value = 0.05)
+summary(is.de)
+plotSmear(qlf, de.tags = rownames(qlf)[is.de != 0])
+```
+
+### Visualize a few of the differentially expressed genes
+
+```{r}
+for (i in tt$table$gene.id[1:3]) {
+  barplot(cpm[i, ], col = as.numeric(factor(dge$samples$cell)), 
+          las = 2, cex.names = 0.75, main = i, ylab = "CPM")
+}
+```
+
+## Gene set analysis (functional analysis)
+
+- Gene sets represent groups of genes that are "related" in some (well-defined) way. They can be obtained e.g. from [mSigDB](http://software.broadinstitute.org/gsea/msigdb/), [GO (Gene Ontology)](http://geneontology.org/), [KEGG](http://www.genome.jp/kegg/).
+- Distinction between competitive and self-contained tests ([Goeman & Bühlmann](http://bioinformatics.oxfordjournals.org/content/23/8/980))
+
+```{r}
+hallmarks <- readRDS(paste0(data_dir, "/hallmarks_entrez.rds"))
+head(hallmarks)
+
+dge$counts <- round(dge$counts)
+gstest <- camera(dge, index = ids2indices(hallmarks, dge$genes$entrez), design = design)
+gstest
+```
+
+```{r}
+barcodeplot(qlf$table$logFC, 
+            index = ids2indices(hallmarks, dge$genes$entrez)[["HALLMARK_ADIPOGENESIS"]])
+```
+
+
