@@ -32,7 +32,7 @@ Monday 11.00-11.45 Y11-J-05
 | 14.11.2016  | Mark  | edgeR+friends 1  | x | x |
 | 21.11.2016  | Mark  | edgeR+friends 2  | x | x |
 | 28.11.2016  | Hubert  | classification  | [A Method for Checking Genomic Integrity in Cultured Cell Lines from SNP Genotyping Data](http://dx.doi.org/10.1371/journal.pone.0155014) <br> {SA, FB, PCC}  | x |
-| 5.12.2016  | Mark  | epigenomics, DNA methylation  | x | x |
+| 5.12.2016  | Mark  | epigenomics, DNA methylation  | [Empirical Bayes Analysis of a Microarray Experiment](http://www.tandfonline.com/doi/abs/10.1198/016214501753382129) <br> {GA, IA} | x |
 | 12.12.2016  | Mark  | gene set analysis  | x | x |
 | 19.12.2016  | Mark  | single-cell  | x | x |
 
