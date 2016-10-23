@@ -17,7 +17,7 @@ Monday 11.00-11.45 Y11-J-05
 [IMLS](http://www.imls.uzh.ch/index.html), UZH
 
 
-## Tentative Schedule
+## Schedule
 
 | Date  | Lecturer | Topic | JC1 | JC2 |
 | --- | --- | --- | --- | --- |
