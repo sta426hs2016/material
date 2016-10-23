@@ -28,10 +28,10 @@ Monday 11.00-11.45 Y11-J-05
 | 17.10.2016  | Charlotte  | hands-on RNA-seq session  | | |
 | 24.10.2016  | Mark  | limma 1  | | |
 | 31.10.2016  | Mark  | limma 2  | x | x |
-| 07.11.2016  | Hubert  | RNA-seq quantification  | x | x |
+| 07.11.2016  | Hubert  | RNA-seq quantification  | [Reliable detection of subclonal single-nucleotide variants in tumour cell populations](http://www.nature.com/articles/ncomms1814) <br> {CB,L-WY} | [A network-based method to evaluate quality of reproducibility of differential expression in cancer genomics studies](http://www.impactjournals.com/oncotarget/index.php?journal=oncotarget&page=article&op=view&path[]=5987&pubmed-linkout=1) <br> {TS, SS} |
 | 14.11.2016  | Mark  | edgeR+friends 1  | x | x |
 | 21.11.2016  | Mark  | edgeR+friends 2  | x | x |
-| 28.11.2016  | Hubert  | classification  | x | x |
+| 28.11.2016  | Hubert  | classification  | [A Method for Checking Genomic Integrity in Cultured Cell Lines from SNP Genotyping Data](http://dx.doi.org/10.1371/journal.pone.0155014) <br> {SA, FB, PCC}  | x |
 | 5.12.2016  | Mark  | epigenomics, DNA methylation  | x | x |
 | 12.12.2016  | Mark  | gene set analysis  | x | x |
 | 19.12.2016  | Mark  | single-cell  | x | x |
