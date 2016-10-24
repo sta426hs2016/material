@@ -27,7 +27,7 @@ Monday 11.00-11.45 Y11-J-05
 | 10.10.2016  | Hubert  | NGS intro; mapping  | | |
 | 17.10.2016  | Charlotte  | hands-on RNA-seq session  | | |
 | 24.10.2016  | Mark  | limma 1  | | |
-| 31.10.2016  | Mark  | limma 2  | x | x |
+| 31.10.2016  | Mark  | limma 2  | [Topological Data Analysis Generates High-Resolution, Genome-wide Maps of Human Recombination](http://www.sciencedirect.com/science/article/pii/S2405471216301831) {CS} | x |
 | 07.11.2016  | Hubert  | RNA-seq quantification  | [Reliable detection of subclonal single-nucleotide variants in tumour cell populations](http://www.nature.com/articles/ncomms1814) <br> {CB,L-WY} | [A network-based method to evaluate quality of reproducibility of differential expression in cancer genomics studies](http://www.impactjournals.com/oncotarget/index.php?journal=oncotarget&page=article&op=view&path[]=5987&pubmed-linkout=1) <br> {TS, SS} |
 | 14.11.2016  | Mark  | edgeR+friends 1  | [Impact of statistical models on the prediction of type 2 diabetes using non-targeted metabolomics profiling](https://www.ncbi.nlm.nih.gov/pubmed/27689004) <br> {FB,SM,CP} | x |
 | 21.11.2016  | Mark  | edgeR+friends 2  | x | x |
