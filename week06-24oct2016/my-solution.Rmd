@@ -1,0 +1,148 @@
+---
+title: "Exercise for Lecture 4 - Differential expression with the limma package"
+output: html_document
+---
+
+```{r, echo=FALSE}
+rm(list=ls())
+library("limma")
+
+nGenes <- 10000                   # number of "features"
+nSamples <- 6                     # number of samples (split equal in 2 groups)
+pDiff <- .1                       # percent of genes "differential 
+grp <- rep(0:1,each=nSamples/2)   # dummy variable for exp. group
+trueFC <- 2                       # log-fold-change of truly DE
+
+d0 <- 1
+s0 <- 0.8
+sd <- s0*sqrt(d0/rchisq(nGenes,df=d0))  # dist'n of s.d.
+```
+
+#### Question 1. Look at the distribution of "true" s.d. (each gene has a different s.d.).  You will change this distribution later to see effect on differential detection performance.
+```{r}
+max(sd)
+sum(sd>1000)
+hist(sd, xlim=c(0,100), breaks=10000)
+hist(sd, xlim=c(20,1000), breaks=10000, ylim = c(0,50))
+```
+
+Next, we can generate a table of (null) data:
+
+```{r, echo=FALSE}
+y <- matrix(rnorm(nGenes*nSamples,sd=sd),
+            nr=nGenes,nc=nSamples)
+indD <- 1:floor(pDiff*nGenes)
+diff <- sample(c(-1,1),max(indD),replace=TRUE)*trueFC
+y[indD,grp==1] <- y[indD,grp==1] + diff
+```
+
+#### Question 2. To make sure you understand the simulation, look at some of the rows in the table.  For example, plot the data (e.g., a barplot) for one of the features that is differential and one that is non-differential.
+```{r}
+barplot(y[1,])
+barplot(y[1001,])
+```
+
+Expressed data is row 1:1000, rest is not expressed. Expression is in the last three colums consitently in one direction.
+
+#### Question 3. What is the interpretation of the two columns of this design matrix?
+```{r}
+design <- model.matrix(~grp)
+design
+```
+
+baseline expression of all samples is (Intercept), differential expression of sample 3-6 compared to 1-3 is grp.
+
+
+```{r, echo=FALSE}
+fit <- lmFit(y,design)
+fit <- eBayes(fit)
+```
+
+#### Question 4. For each row in the simulated table, calculate the classical 2-sample t-test (perhaps store the result in a vector named 'classicalt'; see below).  See ?t.test for more details about the built-in R function to do this calculation and convince yourself which arguments to use to match the t-test described in class.
+```{r}
+classicalt <- apply( y, 1, function(x){t.test(x[1:3],x[4:6], alternative="two.sided")$statistic[[1]]} )
+```
+
+#### Question 5. Add an exploratory visualization to your plots above, perhaps with a command similar to below.  From this visualization, summarize any differences you see between the three statistical summaries of a change between experimental groups.
+```{r}
+cols <- rep("black",nrow(y))
+cols[indD] <- "blue"
+
+par(mfrow=c(3,1))
+plot( fit$t[,2], col=cols, ylim=c(-10,10), pch=".", main="Moderated-t" )
+plot( classicalt, col=cols, ylim=c(-10,10), pch=".", main="Classical-t" )
+plot( fit$coef[,2], col=cols, ylim=c(-6,6), pch=".", main="log FC" )
+```
+
+Classical-t has more outliers then moderated-t especially for expressed genes
+log FC has even more outliers then he classical-t and spreads for the expressed genes into positive and negative instead of just increasing variance
+
+#### Question 6. Pick a reasonable metric to compare the methods: ROC curve, false discovery plot, power versus achieved FDR.  Using this metric/curve, compare the classical t-test (classicalt), the moderated t-test (fit\$t) and the log-fold-change or mean difference (fit\$coef).  Either manually calculate and plot it or use a nice package for it (e.g., [https://rocr.bioinf.mpi-sb.mpg.de/](the ROCR package) or [https://github.com/markrobinsonuzh/benchmarkR](benchmarkR package))  What method(s) perform well?
+```{r}
+library(ROCR)
+labels <- c(rep(1,nGenes*pDiff),rep(0,nGenes*(1-pDiff)))
+pred_classical <- prediction( abs(classicalt), labels )
+perf_classical <- performance(pred_classical,"tpr","fpr")
+pred_moderated <- prediction( abs(fit$t[,2]), labels )
+perf_moderated <- performance(pred_moderated,"tpr","fpr")
+pred_logFC <- prediction( abs(fit$coef[,2]), labels )
+perf_logFC <- performance(pred_logFC,"tpr","fpr")
+
+par(mfrow=c(1,1))
+plot(perf_classical, col="red", lwd=2)
+plot(perf_moderated, add=TRUE, col="blue", lwd=2)
+plot(perf_logFC, add=TRUE, col="green", lwd=2)
+legend(x=0.60, y=0.3, legend=c("classical t", "moderated t", "log FC"), col=c("red","blue","green"), lwd=c(2,2,2) )
+```
+
+Moderated t performs better than classical t for all FPRs. For FPRs below 0.2 it also performs better than log FC. As this is the used part the moderated t performs best for the given parameters.
+
+#### Question 7.  Explore the performance of these test statistics for a few scenarios.  For example, change the sample size, the number of genes DE, magnitude of the difference, level of variability.  What influence do these parameters have on the relative performance? 
+
+```{r}
+plot_performance <- function(nGenes, nSamples, pDiff, trueFC, d0, s0, title){
+  grp <- rep(0:1,each=nSamples/2)
+  sd <- s0*sqrt(d0/rchisq(nGenes,df=d0))  # dist'n of s.d.
+  
+  y <- matrix(rnorm(nGenes*nSamples,sd=sd),
+            nr=nGenes,nc=nSamples)
+  indD <- 1:floor(pDiff*nGenes)
+  diff <- sample(c(-1,1),max(indD),replace=TRUE)*trueFC
+  y[indD,grp==1] <- y[indD,grp==1] + diff
+  
+  design <- model.matrix(~grp)
+  
+  fit <- lmFit(y,design)
+  fit <- eBayes(fit)
+  
+  classicalt <- apply( y, 1, function(x){t.test(x[1:nSamples/2],x[nSamples/2+1:nSamples/2*2], alternative="two.sided")$statistic[[1]]} )
+  
+  labels <- c(rep(1,nGenes*pDiff),rep(0,nGenes*(1-pDiff)))
+  pred_classical <- prediction( abs(classicalt), labels )
+  perf_classical <- performance(pred_classical,"tpr","fpr")
+  pred_moderated <- prediction( abs(fit$t[,2]), labels )
+  perf_moderated <- performance(pred_moderated,"tpr","fpr")
+  pred_logFC <- prediction( abs(fit$coef[,2]), labels )
+  perf_logFC <- performance(pred_logFC,"tpr","fpr")
+
+  plot(perf_classical, col="red", lwd=2, main=title)
+  plot(perf_moderated, add=TRUE, col="blue", lwd=2)
+  plot(perf_logFC, add=TRUE, col="green", lwd=2)
+}
+
+par(mfrow=c(3,3))
+plot_performance(10000, 6, .1, 2, 1, 0.8, "Standard")
+plot_performance(10000, 4, .1, 2, 1, 0.8, "Small sample size")
+plot_performance(10000, 10, .1, 2, 1, 0.8, "Large sample size")
+plot_performance(1000, 6, .1, 2, 1, 0.8, "Less genes")
+plot_performance(100000, 6, .1, 2, 1, 0.8, "More genes")
+plot_performance(10000, 6, .1, 1.2, 1, 0.8, "Low difference")
+plot_performance(10000, 6, .1, 10, 1, 0.8, "High difference")
+plot_performance(10000, 6, .1, 2, 1, 0.2, "Low variance")
+plot_performance(10000, 6, .1, 2, 1, 3.2, "High variance")
+```
+
+For smaller sample size all method are worse and for large sample size all methods are better, but the moderated t is the least affected by it.
+The number of genes straightens out the curves and for a low number of genes the performance seems generally a bit better.
+The higher the genes are differentially expressed the better performs the log FC compared to the other methods. For lower and higher expression then standard the moderated t loses superiority over the classical t.
+A low variance has the same effect as a high difference and vice versa
