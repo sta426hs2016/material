@@ -32,7 +32,7 @@ Monday 11.00-11.45 Y11-J-05
 | 14.11.2016  | Mark  | edgeR+friends 1  | [Impact of statistical models on the prediction of type 2 diabetes using non-targeted metabolomics profiling](https://www.ncbi.nlm.nih.gov/pubmed/27689004) <br> {FB,SM,CP} | x |
 | 21.11.2016  | Mark  | edgeR+friends 2  | x | x |
 | 28.11.2016  | Hubert  | classification  | [A Method for Checking Genomic Integrity in Cultured Cell Lines from SNP Genotyping Data](http://dx.doi.org/10.1371/journal.pone.0155014) <br> {EP, PCC}  |[Shrinkage estimation of dispersion in Negative Binomial models for RNA-seq experiments with small sample size](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3654711/)<br> {AD, KL, XL} |
-| 5.12.2016  | Mark  | epigenomics, DNA methylation  | [Empirical Bayes Analysis of a Microarray Experiment](http://www.tandfonline.com/doi/abs/10.1198/016214501753382129) <br> {GA, IA} | x |
+| 5.12.2016  | Mark  | epigenomics, DNA methylation  | [Empirical Bayes Analysis of a Microarray Experiment](http://www.tandfonline.com/doi/abs/10.1198/016214501753382129) <br> {GA, IA} | [ Redefining CpG islands using hidden Markov models](http://biostatistics.oxfordjournals.org/content/11/3/499) <br> {FL, JK} |
 | 12.12.2016  | Mark  | gene set analysis  | x | x |
 | 19.12.2016  | Mark  | single-cell  | [The statistical properties of gene-set analysis](http://www.nature.com/nrg/journal/v17/n6/full/nrg.2016.29.html) <br> {AS, FE, MB} | x |
 
