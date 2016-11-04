@@ -1,0 +1,104 @@
+---
+title: "Exercise for Lecture 7 - more on differential expression with the limma package"
+output: pdf_document
+---
+
+The purpose of this exercise is to understand a few more details of a standard 'limma' differential expression (DE) analysis.  In particular, we will explore: 
+  1. the combination of design matrices and contrast matrices to answer DE questions-of-interest
+  2. some of the preprocessing steps (and the concepts leading to them) for Affymetrix microarray data.
+  
+If you need additional resources to understand this exercise or the methods behind it, it is strongly encourage to read both the [http://www.statsci.org/smyth/pubs/ebayes.pdf](limma paper) (as given in class) and the [https://www.bioconductor.org/packages/release/bioc/vignettes/limma/inst/doc/usersguide.pdf](limma user's guide).
+
+
+```{r warning=FALSE, message=FALSE}
+library("limma")
+library("affy")
+library("preprocessCore")
+unzip("affy_estrogen.zip")
+ddir <- "affy_estrogen"
+dir(ddir)
+```
+
+It is generally good practice to store the details of an experiment (e.g., the set of samples) in a machine-readable table, like the provided ``targets.txt'' file; this is known as **metadata**.  Have a look at this file in a text editor or a spreadsheet to see what kind of information is typically described.  The following code reads in this metadata file, reads in the Affymetrix data and processes it with a popular method called RMA (robust multichip analysis); some of the details of RMA are reverse-engineered below.
+
+```{r warning=FALSE, message=FALSE}
+# preprocess affymetrix data
+targets <- readTargets("targets.txt", path=ddir)
+targets
+
+abatch <- ReadAffy(filenames=targets$filename,
+                   celfile.path=ddir)
+eset <- rma(abatch)  # bg correct, normalize, summarize
+```
+
+
+It is always good practice to look at overall summaries of a large dataset, such as a multidimensional scaling (MDS) plot to get an idea of the relations between samples.  In this case, "distances on the plot approximate the typical log2 fold changes" (?plotMDS):
+
+```{r}
+plotMDS( exprs(eset) )  # MDS plot
+```
+
+In order to run the standard limma pipeline for differential expression, we need a design matrix and optionally, a contrast matrix.  In the code below, the metadata is encoded into a factor variable that is used for creating the design matrix.  It is suggested to look at and understand the design matrix before proceeding.
+
+```{r}
+# do the limma modeling
+f <- paste(targets$estrogen,targets$time.h,sep="")
+f <- factor(f)
+
+# create design matrix
+design <- model.matrix(~0+f)
+colnames(design) <- levels(f)
+design
+```
+
+From the design matrix, we can now **fit** the linear model:
+
+```{r}
+fit <- lmFit(eset, design)
+```
+
+To ask questions about the parameters defined in the design matrix, we can now define a **contrast** matrix, which can be constructed by hand or using the makeContrasts() accessory function.  Again, it is suggested to study this matrix and make sure you understand what it is doing before proceeding.
+
+```{r}
+cont.matrix <- makeContrasts(E10="present10-absent10",
+                             E48="present48-absent48",
+                             Time="absent48-absent10",levels=design)
+cont.matrix
+```
+
+Now, the contrasts can be fit and the moderation of the variance parameters (as discussed in lectures) can be performed:
+
+```{r}
+fit2  <- contrasts.fit(fit, cont.matrix)
+fit2  <- eBayes(fit2)
+fit2
+class(fit2)
+names(fit2)
+```
+
+At this point, a lot of elements have now been added to the ``fit2'' object and it would again be worth studying the details.  See if you can understand what the different components are and if you need more details, type ?"MArrayLM-class" to see more information.
+
+Next, we wish to compute the differential expression statistics, such as moderated-t and F statistics and perhaps some P-values.  The topTable() function has many facilities for this:
+
+```{r}
+topTable(fit2,coef=1)
+topTable(fit2,coef=2)
+```
+
+Here, it is worth understanding exactly what "coef=1" or "coef=2" are testing before proceeding.  
+
+It is also recommended to look at the data that goes into the statistical test in the first place.  For example, a simple barplot() goes a long way to helping interpret
+
+```{r}
+barplot( exprs(eset)["39642_at",], las=2, cex.names=.7 )  # top gene
+```
+
+#### Question 1. From the matrix of summarized Affymetrix data that went into the limma pipeline in the first place -- exprs(eset) -- manually calculate the logFC and AveExpr for one of the top differentially expressed genes.
+
+Important side note: if you experiment is sufficiently simple (e.g., a 1-way design), you may not need a contrast matrix at all; the differential expression of interest can be defined through column(s) of the design matrix (see discussion in the lecture notes).
+
+#### Question 2. Create a Venn diagram summarizing the numbers of  differential genes for the 3 contrasts defined above 'E10', 'E48' and 'Time'.  Hint: use the decideTests() and vennDiagram() functions in limma (you can use default settings).  If you need more help using these functions, try: ?decideTests, ?vennDiagram
+ 
+#### Question 3. Try to reproduce the above limma modeling using an **alternative design matrix** (remember, it's the combination of a design matrix and a contrast matrix).  Hint: use the experimental factors defined in the 'targets' data frame.
+
+#### Note: Submit both an Rmarkdown/markdown file as well as a compiled HTML file to your private github repository.
