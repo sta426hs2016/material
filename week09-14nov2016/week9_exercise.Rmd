@@ -1,0 +1,65 @@
+---
+title: "Exercise 9: differential expression with count data"
+output: html_document
+---
+
+In this exercise, we will explore two popular pipelines for differential expression of RNA-seq data, (already) given the counts.  Details on the counting and/or of the transcript abundance estimation was given in Charlotte's RNA-seq session and the last lecture from Hubert.  The dataset used here is the well-known 'pasilla' data, which compares the knockout of pasilla (a splicing factor) to a wild-type control.
+
+In this exercise, some code will be given to get started.  But, there are good resources on how to go through these fairly standard analysis pipelines (links below).
+
+First, we have the samples already organized into a table of metadata and this is used to set the count filenames.
+
+```{r}
+library("edgeR")
+samples <- read.table("samples.txt", header=TRUE,
+                      row.names=5, stringsAsFactors=FALSE)
+samples
+```
+
+
+Here, we read in the 7 count files and consolidate it into a single table as opposed to 7 individual files -- the readDGE() function saves having to do this manually:
+
+```{r}
+counts <- readDGE(samples$countfile)$counts
+```
+
+Here, we can trim the column names to get a 'nice' grouping variable to use in the design matrix:
+
+```{r}
+grp <- gsub("\\-.[0-9]*","",colnames(counts))
+grp
+```
+
+
+Below is a pipeline using likelihood-ratio tests that is adapted from Quick Start section, early in the [edgeR user's guide](http://bioconductor.org/packages/release/bioc/vignettes/edgeR/inst/doc/edgeRUsersGuide.pdf)
+
+
+```{r eval=FALSE}
+group <- factor(c(1,1,2,2))
+y <- DGEList(counts=x,group=group)
+y <- calcNormFactors(y)
+design <- model.matrix(~group)
+
+y <- estimateDisp(y,design)
+#To perform likelihood ratio tests:
+fit <- glmFit(y,design)
+lrt <- glmLRT(fit,coef=2)
+topTags(lrt)
+```
+
+This will lead you to a list of putative/detected differentially expressed genes.  Note that the code above is just an example and is not evaluated in the script.
+
+#### Exercise 1: Fix the code above to work on the count table that was already read in.  Add in some spot checks, including an MDS plot from plotMDS(), a look at the dispersion-mean plot using plotBCV() and a look at the overall M vs A plot using plotSmear().
+
+As an alternative, one can run through a standard voom pipeline, such as:
+
+```{r eval=FALSE}
+v <- voom(d$counts, design=model.matrix(~grp), plot = TRUE)
+vf = lmFit(v, design = model.matrix(~grp))  # note similarity to limma
+                                            # analysis performed earlier
+vf = eBayes(vf)
+```
+
+For more details, see Section 15.5 Differential expression of the [limma user's guide](http://www.bioconductor.org/packages/devel/bioc/vignettes/limma/inst/doc/usersguide.pdf).
+
+#### Exercise 2. Again, the above code for voom is not run here.  Fix this code to work with the count dataset above and then do some ``spot checks'' of the genes called DE.  For example, make a plot of the plot of estimated fold changes for the two methods, P-values, or a venn diagram of the called sets of DE genes at a set threshold.
