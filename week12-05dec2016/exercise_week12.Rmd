@@ -1,0 +1,182 @@
+---
+title: "Exercise 12"
+output: html_document
+---
+
+This exercise is designed to introduce you to two types of DNA methylation data: Illumina 450k array (bisulphite sequencing of DNA + microarray readout), sequencing of bisulphite-treated DNA.  Most of what is below is snippets from a previously-established pipeline, not all of the details of which are given.  But, you can look these up in the documentation for the packages we use.
+
+The data we will use can be found [here](https://www.dropbox.com/s/tcg3uyeeejyx5m4/lecture12_data.zip?dl=0).
+
+The data consists of DNA methylation measurements (2 platforms) for replicates of [LNCaP](http://www.lgcstandards-atcc.org/products/all/CRL-1740.aspx?geo_country=ch) cells (metastatic prostate cancer cells from lymph node) and PrEC (prostate epithelial cells).  We will compare these two platforms and run an algorithm to find differentially methylated regions.
+
+First, we load some new packages (install these on your system if needed):
+
+```{r warning=FALSE}
+library("minfi")
+library("charm")
+library("GenomicRanges")
+```
+
+After you have unzipped the exercise files, you can follow the steps below to: i) read in a sheet of metadata; ii) read in the raw probe-level data from IDAT files (the format used by Illumina); iii) preprocess the data.
+
+```{r}
+f <- read.metharray.sheet(".", "450k_SampleSheet", recursive = FALSE)
+f # hack to get software to recognize
+f$Basename <- paste0(f$Slide,"_",f$Array) 
+
+raw <- read.metharray.exp(base="6264509024/", 
+                     targets = f, verbose=TRUE, recursive = TRUE)
+
+ppi <- preprocessIllumina(raw, bg.correct = TRUE, normalize = "controls")
+```
+
+Next, we pull out the *beta* values (consensus methylation levels) in to a matrix:
+
+```{r}
+b <- getBeta(ppi)
+colnames(b) <- f$Sample_Name  # give descriptive column names
+head(b)
+```
+
+To make the problem a little smaller for the exercise, we subset here to just the probes for chromosome 22:
+
+```{r}
+anno <- read.csv("450_probes_subset.csv", stringsAsFactors=FALSE, header=TRUE)
+probeids <- intersect(rownames(b), anno$Name)
+```
+
+With a couple steps of matching identifiers, we can align the table of data and the table of annotation information:
+
+```{r}
+m <- match(probeids, anno$Name)
+anno <- anno[m, ]
+
+m <- match(probeids, rownames(b))
+dim(b)
+b <- b[m, ]
+dim(b)
+
+# spot checks
+all( rownames(b) == anno$Name )
+nrow(anno) == nrow(b)
+```
+
+
+Next, we filter out some probes because some of the methods (to find differentially methylated regions) below do not handle them well:
+
+```{r}
+k <- !is.na(anno$MAPINFO) & rowSums( is.na(b) )==0
+anno <- anno[k,]
+b <- b[k,]
+dim(b)
+```
+
+#### Question 1.   Make histograms of "beta" values (3 LNCaP replicates, 3 PrEC replicates).  Are there (global) differences between cancer and  normal?  What if you restrict to probes only in CpG islands?  (You can get this information for chr22 in the annotation file).
+
+
+Next, we use a *GRanges* object as a container for the location information (you will see why below):
+
+```{r}
+# use a 'GRanges' object to save the location info
+gr450k <- GRanges(seqnames=paste("chr",anno$CHR,sep=""), 
+                  ranges=IRanges(start=anno$MAPINFO,width=1))
+gr450k
+```
+
+
+The RRBS data ("reduced representaton" bisulphite sequencing; essentially a protocol that selects for regions near CpG islands) to compare against was collected by a consortium and they make their (processed) data available in BED format.  In the code below, I've selected a subset of columns to get only the information we want:
+
+```{r}
+rf <- dir(,".bedRrbs")
+names(rf) <- gsub("_chr22.bedRrbs","",rf)
+
+rd <- lapply(rf, function(u) {
+  d <- read.table(u, header = FALSE, stringsAsFactors = FALSE)
+  d[,c(1:3,5:6,11)]
+})
+
+# have a look at how RRBS data comes
+lapply(rd,head)
+```
+
+In this table, *V11* is the percent methylation and *V5* is the total number of reads at that position.
+
+Below is a clunky function that was written several years ago to collapse the information across both strands to a single position (in principle, the positive and negative positions offset by a base are measuring the same thing):
+
+```{r}
+mapNeg2PosRRBS <- function(p) {
+  xs <- split(p, p$V6)
+  pos <- xs[["+"]]
+  neg <- xs[["-"]]
+
+  key <- paste(pos$V1, pos$V3-1, sep = ".")
+  keyn <- paste(neg$V1, neg$V2, sep = ".")
+
+  # finding the pairs
+  m.pos <- match(key, keyn)
+  n <- is.na(m.pos)
+ 
+  # positive strand
+  x <- data.frame(chr=pos$V1, position=pos$V2+1, n=pos$V5, 
+                  nC=round( pos$V5*pos$V11/100 ))
+
+  # negative strand that match with positive strand
+  mn <- m.pos[!n]
+  x$n[!n] <- x$n[!n] + neg$V5[mn]
+  x$nC[!n] <- x$nC[!n] + round( neg$V5[mn]*neg$V11[mn]/100 )
+ 
+  # negative strand only
+  m.neg <- match(keyn, key)
+  nas.neg <- is.na(m.neg)
+  y <- data.frame(chr=neg$V1, position=neg$V2, n=neg$V5,
+                  nC=round( neg$V5*neg$V11/100 ))[nas.neg, ]
+
+  res <- rbind(x,y)
+  GRanges(seqnames=res$chr, IRanges(start=res$position, width=1),
+          n=res$n, nC=res$nC)
+}
+```
+
+This function can be applied to every element of the list (the tables that we read in above) and returns a list of GRanges objects:
+
+```{r}
+rdc <- lapply(rd, mapNeg2PosRRBS)
+lapply(rdc,head) # spot check
+```
+
+
+#### Exercise 2. Plot the concordance of 450k and RRBS data (for the subset where they both measure the same site).  Does the concordance between 450k and RRBS improve when you require a higher depth in the RRBS data? n.b. a useful function to match up coordinates is findOverlaps().
+
+
+Next, we run one of the pipelines discussed in lectures: finding differentially methylated regions (DMRs).
+
+```{r}
+# make design matrices for DMR finding 
+# ('d1' with group variable, 'd0' just intercept)
+grp <- gsub("_[1-3]","",colnames(b))
+d1 <- model.matrix(~grp)
+d0 <- d1[,1,drop=FALSE]
+
+b1 <- b*.98+.01
+range(b)
+range(b1)
+
+o <- order(anno$CHR, anno$MAPINFO)
+
+# find differentially methylated regions
+library(charm)
+pns <- clusterMaker(anno$CHR, anno$MAPINFO, maxGap=500)
+dmrs <- dmrFind(p=b1[o,], mod=d1, mod0=d0, coef=2, pns=pns[o],
+                chr=anno$CHR[o], pos=anno$MAPINFO[o], svs=0, 
+                use.limma=TRUE, use="swald", Q=0.97)
+```
+
+You may want to look up what all of these settings in dmrFind are doing.  In the end, the method has discovered a list of DMRs and these are available in the 'dmrs' element of the output list:
+
+```{r}
+head(dmrs$dmrs)
+```
+
+#### Exercise 3. For one of the DMRs found using 450k array data (as above), take a look in the corresponding RRBS data for the same region (assuming measurements are made) to verify that there is validating evidence of the DMR.
+
+
