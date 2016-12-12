@@ -1,0 +1,77 @@
+---
+title: "STA426 Exercise Week 13"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Segmentation example
+--------------------
+
+Here, we make a toy example of some data with changepoints, in order to play around with the circular binary segmentation method.  Here is a short pipeline:
+
+```{r message=FALSE}
+n <- 100
+x <- rnorm(n, sd=0.1) + rep(c(-0.4,0.1,-0.4), c(30,60,10))
+plot(x, pch=19)
+
+# run segmented
+library("DNAcopy")
+test1 <- segment(CNA(x, rep("chr1",n), 1:n))
+test1$output
+```
+
+
+### Exercise 1a. Understand the output of the segment() function and overlay the segmentation (here, three segments) onto the plot.
+
+### Exercise 1b (optional).  Calculate all partial sums and the (Olshen et al. 2004) statistic for all pairs of differences.  Where is this statistic maximized?  Is this indicative of the "true" differences in segments?
+
+
+Peak finding example
+--------------------
+
+Below is a pipeline using BayesPeak, starting from much-reduced BED files (the BED files stores the location of mapped reads reads for a H3K4me3 chromatin immunoprecipitation -- or ChIP -- pulldown as well as an Input).
+
+```{r message=FALSE}
+library(GenomicRanges)
+library(BayesPeak)
+```
+
+```{r}
+
+ipf <- "H3K4me3reduced.bed.gz"
+inf <- "Inputreduced.bed.gz"
+
+bp <- bayespeak(ipf, inf, chr = "chr16", start = 9.2E7, end = 9.5E7, 
+                iterations = 2000L, use.multicore = TRUE) 
+bpo <- summarize.peaks(bp)
+bpo
+```
+
+
+From these "results", we now read in the raw sequencing data to understand the data behind the peak calling:
+
+
+```{r message=FALSE}
+ip <- read.table(ipf)
+iN <- read.table(inf)
+
+head(ip,3)
+
+ipg <- GRanges(ip$V1, IRanges(ip$V2,ip$V3), strand=ip$V6)
+ing <- GRanges(iN$V1, IRanges(iN$V2,iN$V3), strand=iN$V6)
+
+ipc <- coverage(ipg)
+inc <- coverage(ing)
+
+par(mfrow=c(2,1))
+xvals <- 94780000:95000000
+plot(xvals, as.numeric(ipc$chr16[xvals]), type="l", main="H3K4me3")
+plot(xvals, as.numeric(inc$chr16[xvals]), type="l", main="Input")
+```
+
+
+### Exercise 2. Look through the results from bayespeak() (in the 'bpo' object), try and make some plots of read densities relative to called peaks, (perhaps) similar to those above but ideally with the read density *by strand* to be able to convince yourself that the HMM is calling peaks only when reads are observed from both strands.
+
