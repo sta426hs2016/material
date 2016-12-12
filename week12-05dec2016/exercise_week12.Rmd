@@ -15,6 +15,7 @@ First, we load some new packages (install these on your system if needed):
 library("minfi")
 library("charm")
 library("GenomicRanges")
+library("IlluminaHumanMethylation450kmanifest")
 ```
 
 After you have unzipped the exercise files, you can follow the steps below to: i) read in a sheet of metadata; ii) read in the raw probe-level data from IDAT files (the format used by Illumina); iii) preprocess the data.
