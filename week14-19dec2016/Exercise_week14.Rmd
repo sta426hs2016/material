@@ -1,0 +1,86 @@
+---
+title: "Exercise 14"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## scRNA-seq exercise
+
+Download one of the scRNA-seq datasets (use the 'Download .rds' button) from the [conquer database](http://imlspenticton.uzh.ch:3838/conquer/); keep in mind that the large the number of cells, the larger the file will be.  First, read the dataset into R (use 'readRDS') and understand the format of the data that you get.  You may also want to check the corresponding QC metrics from conquer; for example, click on the 'scater' or 'MultiQC' links to see more details for your dataset.
+
+```{r read_rds, eval=FALSE}
+d <- readRDS("myfile.rds")
+class(d)
+```
+
+You should get a 'MultiAssayExperiment' object.  Note: you'll need to install a package of the same name.
+
+The overall goal here is to transform, filter, explore and project in low dimensions a single-cell RNA-seq dataset down to 2 or 3 dimensions. 
+
+Here is a potential pipeline: extract the count table, compute the counts per million (e.g., using column sums), transform the data with a 'log(eps+cpm)' where eps is a number between 1 and 20, filter out low variance genes (I suggest looking at a variance-mean plot and retaining 200-500 genes with the highest variance on the log-transformed scale)  and then using a method (e.g., tSNE, diffusion maps, PCA) to project the data down to 2 or 3 dimensions.  When you make the low-dimensional project, colour the points (cells) according to the label given in the metadata.
+
+There is not a single way to do this, but the hope is that any good low-dimensional projection allows you to recapture biological features of the data.
+
+(Optional) Pick two of the cell types within the dataset you chose and try and find marker genes that distinguish between them.  For example, you could use a 'wilcox.test' in R to test the difference.
+
+## CyTOF exercise
+
+Below is some code to use a test flow cytometry dataset (from the FlowSOM package) and cluster the cells into 10 groups:
+
+```{r}
+library(FlowSOM)
+
+fileName <- system.file("extdata","lymphocytes.fcs",package="FlowSOM")
+f <- ReadInput(fileName,compensate=TRUE,transform=TRUE,scale=TRUE)
+f <- BuildSOM(f,colsToUse=c(9,12,14:18),xdim=20,ydim=20,rlen=20)
+f <- BuildMST(f)
+
+labels_pre <- f$map$mapping[,1]
+seed <- 1234
+k <- 10
+out <- ConsensusClusterPlus::ConsensusClusterPlus(t(f$map$codes), 
+                                                  maxK=k, 
+                                                  seed=seed,
+                                                  plot="png")
+out <- out[[k]]$consensusClass
+
+
+# extract cluster labels from output object
+labels <- out[labels_pre]
+table(labels)
+```
+
+
+Below is some code to take the same test dataset (after downsampling) and project the data down to 2 dimensions by a couple of different approaches (tSNE, diffusion map):
+
+
+```{r}
+library(cytofkit)
+
+d <- f$data
+set.seed(2016)
+s <- sample(nrow(d),2000)  # downsample, so it runs faster
+d <- d[s,]
+labels_s <- labels[s]
+
+system.time(dr_tsne <- cytofkit::cytof_dimReduction(d,method="tsne"))
+system.time(dr_diffusion <- cytofkit::cytof_dimReduction(d,method="diffusionmap"))
+
+df <- rbind(data.frame(unname(dr_tsne),proj="tsne"),
+            data.frame(unname(dr_diffusion),proj="diffusion_map"))
+colnames(df)[1:2] <- paste0("dim",1:2)
+df$clust <- as.factor(labels_s)
+
+library(ggplot2)
+p <- ggplot(df, aes(x=dim1,y=dim2,color=clust)) + 
+  geom_point(alpha=.3) + 
+  facet_wrap(~proj, scales="free") 
+p
+```
+
+Using variations on both of the code segments above, cluster the cells in the example dataset (file 'subset.fcs' in the github repo) into some number of cluster and assess the results.  Be careful to use only the right columns for clustering; the following columns are not useful: Cell_length, DNA1, DNA2, Viability, file_number, event_number, label.  Note that the 'label' column is the truth according to manual gating, which will be useful for your assessment.  So, pick some number of clusters, run the clustering and compare the set of cluster numbers to the true cluster labels.  For example, one could compute an adjusted [rand index](https://en.wikipedia.org/wiki/Rand_index).  Try a couple different settings of the clustering (or a completely different clustering algorithm) and compare the results.
+
+
